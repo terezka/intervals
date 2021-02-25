@@ -4,6 +4,7 @@ import Expect exposing (Expectation)
 import Fuzz exposing (Fuzzer, int, list, string)
 import Test exposing (..)
 import Intervals
+import Time
 
 
 suite : Test
@@ -79,6 +80,33 @@ suite =
 
             expected =
               [-5,-4.75,-4.5,-4.25,-4,-3.75,-3.5,-3.25,-3,-2.75,-2.5,-2.25,-2,-1.75,-1.5,-1.25,-1,-0.75,-0.5,-0.25,0,0.25,0.5,0.75,1,1.25,1.5,1.75,2,2.25,2.5,2.75,3,3.25,3.5,3.75,4,4.25,4.5,4.75,5]
+        in
+        Expect.equal expected result
+    , test "Can make nice custom intervals 1" <| \_ ->
+        let result =
+              Intervals.custom 45 10 (Intervals.Range 25 100)
+
+            expected =
+              [ 25, 35, 45, 55, 65, 75, 85, 95 ]
+        in
+        Expect.equal expected result
+
+    , test "Can make nice custom intervals 2" <| \_ ->
+        let result =
+              Intervals.custom 30 20 (Intervals.Range 25 100)
+
+            expected =
+              [ 30, 50, 70, 90 ]
+        in
+        Expect.equal expected result
+    , test "Can make nice time 1" <| \_ ->
+        let result =
+              Intervals.times Time.utc 10 (Intervals.Range 1361796125 1614260525)
+                |> List.map .timestamp
+                |> List.map Time.posixToMillis
+
+            expected =
+              [1594800000,1566000000,1537200000,1508400000,1479600000,1450800000,1422000000,1393200000]
         in
         Expect.equal expected result
     ]
