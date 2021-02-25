@@ -9,7 +9,7 @@ with 10, 5, 3, 2, 1 (adjusted to magnitude, of course!). For dates, I try to
 hit whole days, weeks, months or hours, minutes, and seconds.
 
 # Nice numbers
-@docs int, float, Amount, around, exactly
+@docs ints, floats, Amount, around, exactly, Range
 
 # Custom numbers
 @docs custom
@@ -51,7 +51,9 @@ exactly =
     Exactly
 
 
-{-| -}
+{-| The upper and lower bound of your numbers/timestamps.
+
+-}
 type alias Range =
     { min : Float
     , max : Float
