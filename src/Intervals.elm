@@ -1,4 +1,4 @@
-module Intervals exposing (Amount, around, exactly, Range, ints, floats, custom, times)
+module Intervals exposing (Amount, around, exactly, Range, ints, floats, custom, times, Time, Interval, Unit(..))
 
 
 {-| Produce "nice" numbers.
@@ -15,7 +15,7 @@ hit whole days, weeks, months or hours, minutes, and seconds.
 @docs custom
 
 # Nice times
-@docs times
+@docs times, Time, Interval, Unit
 
 
 -}
