@@ -1,9 +1,10 @@
 module Intervals exposing (Amount, around, exactly, Range, ints, floats, custom, times, Time, Unit(..))
 
 
-{-| Produce "nice" numbers.
+{-| Produce "nice" intervals for e.g. axis labels.
 
 ** What are "nice" numbers/integers/datetimes? **
+
 When I say "nice", I just mean that I try to calculate intervals which begin
 with 10, 5, 3, 2, 1 (adjusted to magnitude, of course!). For dates, I try to
 hit whole days, weeks, months or hours, minutes, and seconds.
@@ -157,12 +158,12 @@ Arguments:
 
 1.  The timezone which the chart is being shown in.
 2.  The maximum amount of times you'd like to have produced.
-3.  The beginning date
-4.  The ending date
+3.  The beginning timestamp (as a float for chart convenience)
+4.  The ending timestamp (as a float for chart convenience)
 
 -}
-times : Time.Zone -> Int -> Time.Posix -> Time.Posix -> List Time
-times zone amount min max =
+times : Time.Zone -> Int -> Range -> List Time
+times zone amount range =
     let translateUnit time =
            { timestamp = time.timestamp
             , zone = time.zone
@@ -181,8 +182,11 @@ times zone amount min max =
                 T.Day -> Day
                 T.Month -> Month
                 T.Year -> Year
+
+        fromMs ts =
+            Time.millisToPosix (round ts)
     in
-    T.values zone amount min max
+    T.values zone amount (fromMs range.min) (fromMs range.max)
         |> List.map translateUnit
 
 
