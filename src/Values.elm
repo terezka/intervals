@@ -7,18 +7,73 @@ import TimeExtra as T
 import Round
 
 
+{-| A timestamp with extra info helpful for formatting. Explanation:
+
+  - ** timestamp ** is the position where the tick goes on the axis.
+  - ** isFirst ** is whether this is the first tick or not.
+  - ** unit ** is unit of the interval at which all the ticks are spaced.
+  - ** multiple ** is multiple of the unit of the interval at which all the ticks are spaced.
+  - ** change ** is a `Just` when the tick is changing to a larger unit
+    than used in the interval. E.g. if the interval is 2 hours, then
+    this will be a `Just Day` when the day changes. Useful if you
+    want a different formatting for those ticks!
+
+-}
+type alias Time =
+  { timestamp : Time.Posix
+  , zone : Time.Zone
+  , isFirst : Bool
+  , unit : Unit
+  , multiple : Int
+  , change : Unit
+  }
+
+
+
 type Unit
-    = Millisecond
-    | Second
-    | Minute
-    | Hour
-    | Day
-    | Month
-    | Year
+  = Millisecond
+  | Second
+  | Minute
+  | Hour
+  | Day
+  | Month
+  | Year
 
 
-values : Time.Zone -> Int -> Time.Posix -> Time.Posix -> ( Unit, Int )
-values zone amount min max =
+values : Time.Zone -> Int -> Time.Posix -> Time.Posix -> List Time
+values zone maxMmount min max =
+  let ( unit, mult ) = Debug.log "best" <| toBestUnit zone maxMmount min max
+      amount = Debug.log "amount" <| getNumOfTicks zone unit mult min max
+      initial = ceilingUnit zone unit mult min
+      tUnit = toExtraUnit unit
+
+      toTicks xs acc =
+        case xs of
+          x :: rest ->
+            let prev = T.add tUnit ((x - 1) * mult) zone initial
+                curr = T.add tUnit (x * mult) zone initial
+                change = getChange zone prev curr
+            in
+            toTicks rest (toTick x curr change :: acc)
+
+          [] ->
+            acc
+
+
+      toTick x timestamp change =
+        { timestamp = timestamp
+        , zone = zone
+        , isFirst = x == 0
+        , unit = unit
+        , multiple = mult
+        , change = change
+        }
+  in
+  List.reverse <| toTicks (List.range 0 (amount - 1)) []
+
+
+toBestUnit : Time.Zone -> Int -> Time.Posix -> Time.Posix -> ( Unit, Int )
+toBestUnit zone amount min max =
   let toNice unit =
         let niceNums = niceMultiples unit
             maybeNiceNum = List.filter (\n -> getNumOfTicks zone unit n min max <= amount) niceNums
@@ -59,6 +114,20 @@ getNumOfTicks zone unit mult a b =
     Day -> timeDiff oneDay + 1
     Month -> diff (\d -> d.month + d.year * 12) + 1
     Year -> diff .year + 1
+
+
+getChange : Time.Zone -> Time.Posix -> Time.Posix -> Unit
+getChange zone a b =
+  let aP = T.posixToParts zone a
+      bP = T.posixToParts zone b
+  in
+  if aP.year /= bP.year then Year else
+  if aP.month /= bP.month then Month else
+  if aP.day /= bP.day then Day else
+  if aP.hour /= bP.hour then Hour else
+  if aP.minute /= bP.minute then Minute else
+  if aP.second /= bP.second then Second else
+  Millisecond
 
 
 niceMultiples : Unit -> List Int
@@ -165,6 +234,18 @@ smallerUnit unit =
     Day -> Just Hour
     Month -> Just Day
     Year -> Just Month
+
+
+unitToInt : Unit -> Int
+unitToInt unit =
+  case unit of
+    Millisecond -> 0
+    Second -> 1
+    Minute -> 2
+    Hour -> 3
+    Day -> 4
+    Month -> 5
+    Year -> 6
 
 
 toExtraUnit : Unit -> T.Interval

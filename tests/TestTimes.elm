@@ -8,8 +8,80 @@ import Time
 import Time.Extra as T
 
 
+
 suite : Test
 suite =
+  describe "values:"
+    [ testValues "a year with six ticks" 6
+        (T.Parts 2020 Time.Jan 1 0 0 0 0)
+        (T.Parts 2021 Time.Jan 1 0 0 0 0)
+        [ Time (toPosix (T.Parts 2020 Time.Jan 1 0 0 0 0)) Time.utc True Month 3 Year
+        , Time (toPosix (T.Parts 2020 Time.Apr 1 0 0 0 0)) Time.utc False Month 3 Month
+        , Time (toPosix (T.Parts 2020 Time.Jul 1 0 0 0 0)) Time.utc False Month 3 Month
+        , Time (toPosix (T.Parts 2020 Time.Oct 1 0 0 0 0)) Time.utc False Month 3 Month
+        , Time (toPosix (T.Parts 2021 Time.Jan 1 0 0 0 0)) Time.utc False Month 3 Year
+        ]
+
+    , testValues "a offset year with six ticks" 6
+        (T.Parts 2019 Time.Nov 1 0 0 0 0)
+        (T.Parts 2021 Time.Jan 1 0 0 0 0)
+        [ Time (toPosix (T.Parts 2020 Time.Jan 1 0 0 0 0)) Time.utc True Month 3 Year
+        , Time (toPosix (T.Parts 2020 Time.Apr 1 0 0 0 0)) Time.utc False Month 3 Month
+        , Time (toPosix (T.Parts 2020 Time.Jul 1 0 0 0 0)) Time.utc False Month 3 Month
+        , Time (toPosix (T.Parts 2020 Time.Oct 1 0 0 0 0)) Time.utc False Month 3 Month
+        , Time (toPosix (T.Parts 2021 Time.Jan 1 0 0 0 0)) Time.utc False Month 3 Year
+        ]
+
+    , testValues "a more offset year with six ticks" 6
+        (T.Parts 2019 Time.Oct 1 0 0 0 0)
+        (T.Parts 2021 Time.Jan 1 0 0 0 0)
+        [ Time (toPosix (T.Parts 2019 Time.Oct 1 0 0 0 0)) Time.utc True Month 3 Month
+        , Time (toPosix (T.Parts 2020 Time.Jan 1 0 0 0 0)) Time.utc False Month 3 Year
+        , Time (toPosix (T.Parts 2020 Time.Apr 1 0 0 0 0)) Time.utc False Month 3 Month
+        , Time (toPosix (T.Parts 2020 Time.Jul 1 0 0 0 0)) Time.utc False Month 3 Month
+        , Time (toPosix (T.Parts 2020 Time.Oct 1 0 0 0 0)) Time.utc False Month 3 Month
+        , Time (toPosix (T.Parts 2021 Time.Jan 1 0 0 0 0)) Time.utc False Month 3 Year
+        ]
+
+    , testValues "a week with seven ticks" 10
+        (T.Parts 2020 Time.Jan 3 0 0 0 0)
+        (T.Parts 2020 Time.Jan 12 0 0 0 0)
+        [ Time (toPosix (T.Parts 2020 Time.Jan 3 0 0 0 0)) Time.utc True Day 1 Day
+        , Time (toPosix (T.Parts 2020 Time.Jan 4 0 0 0 0)) Time.utc False Day 1 Day
+        , Time (toPosix (T.Parts 2020 Time.Jan 5 0 0 0 0)) Time.utc False Day 1 Day
+        , Time (toPosix (T.Parts 2020 Time.Jan 6 0 0 0 0)) Time.utc False Day 1 Day
+        , Time (toPosix (T.Parts 2020 Time.Jan 7 0 0 0 0)) Time.utc False Day 1 Day
+        , Time (toPosix (T.Parts 2020 Time.Jan 8 0 0 0 0)) Time.utc False Day 1 Day
+        , Time (toPosix (T.Parts 2020 Time.Jan 9 0 0 0 0)) Time.utc False Day 1 Day
+        , Time (toPosix (T.Parts 2020 Time.Jan 10 0 0 0 0)) Time.utc False Day 1 Day
+        , Time (toPosix (T.Parts 2020 Time.Jan 11 0 0 0 0)) Time.utc False Day 1 Day
+        , Time (toPosix (T.Parts 2020 Time.Jan 12 0 0 0 0)) Time.utc False Day 1 Day
+        ]
+
+    , testValues "offset two days with 24 ticks" 8
+        (T.Parts 2020 Time.Jan 2 13 0 0 0)
+        (T.Parts 2020 Time.Jan 4 4 0 0 0)
+        [ Time (toPosix (T.Parts 2020 Time.Jan 2 18 0 0 0)) Time.utc True Hour 6 Hour
+        , Time (toPosix (T.Parts 2020 Time.Jan 3 0 0 0 0)) Time.utc False Hour 6 Day
+        , Time (toPosix (T.Parts 2020 Time.Jan 3 6 0 0 0)) Time.utc False Hour 6 Hour
+        , Time (toPosix (T.Parts 2020 Time.Jan 3 12 0 0 0)) Time.utc False Hour 6 Hour
+        , Time (toPosix (T.Parts 2020 Time.Jan 3 18 0 0 0)) Time.utc False Hour 6 Hour
+        , Time (toPosix (T.Parts 2020 Time.Jan 4 0 0 0 0)) Time.utc False Hour 6 Day
+        ]
+    ]
+
+
+testValues : String -> Int -> T.Parts -> T.Parts -> List Time -> Test
+testValues name amount a b expected =
+  test name <| \_ ->
+    let result =
+          values Time.utc amount (toPosix a) (toPosix b)
+    in
+    Expect.equal expected result
+
+
+bestUnitSuite : Test
+bestUnitSuite =
   describe "best unit for"
    [ testBestUnit "several months with month interval" 3
         (T.Parts 2020 Time.Jan 4 0 0 0 0)
@@ -106,7 +178,7 @@ suite =
 testBestUnit : String -> Int -> T.Parts -> T.Parts -> ( Unit, Int ) -> Test
 testBestUnit name amount a b expected =
   let ( unit, mult ) =
-        values Time.utc amount (toPosix a) (toPosix b)
+        toBestUnit Time.utc amount (toPosix a) (toPosix b)
   in
   describe name
     [ test "best unit" <| \_ ->
