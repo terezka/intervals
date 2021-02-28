@@ -42,8 +42,8 @@ type Unit
 
 values : Time.Zone -> Int -> Time.Posix -> Time.Posix -> List Time
 values zone maxMmount min max =
-  let ( unit, mult ) = Debug.log "best" <| toBestUnit zone maxMmount min max
-      amount = Debug.log "amount" <| getNumOfTicks zone unit mult min max
+  let ( unit, mult ) = toBestUnit zone maxMmount min max
+      amount = getNumOfTicks zone unit mult min max
       initial = ceilingUnit zone unit mult min
       tUnit = toExtraUnit unit
 
