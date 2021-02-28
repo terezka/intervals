@@ -19,13 +19,9 @@ type Unit
 
 values : Time.Zone -> Int -> Time.Posix -> Time.Posix -> ( Unit, Int )
 values zone amount min max =
-  let mults =
-        getMultiples zone min max
-
-      toNice unit =
-        let actual = unitFromDiff unit mults
-            niceNums = niceMultiples unit
-            maybeNiceNum = List.filter (\n -> div actual n <= amount) niceNums
+  let toNice unit =
+        let niceNums = niceMultiples unit
+            maybeNiceNum = List.filter (\n -> getNumOfTicks zone unit n min max <= amount) niceNums
             div n1 n2 = ceiling (toFloat n1 / toFloat n2)
         in
         case List.head maybeNiceNum of
@@ -40,29 +36,29 @@ values zone amount min max =
   toNice Millisecond
 
 
-getMultiples : Time.Zone -> Time.Posix -> Time.Posix -> Diff
-getMultiples zone a b =
-  let diff unit property =
-        let ceiled = T.ceiling unit zone a in
+getNumOfTicks : Time.Zone -> Unit -> Int -> Time.Posix -> Time.Posix -> Int
+getNumOfTicks zone unit mult a b =
+  let diff property =
+        let ceiled = ceilingUnit zone unit mult a in
         if toMs ceiled > toMs b then -1
-        else property (getDiff zone ceiled b)
+        else div (property (getDiff zone ceiled b)) mult
 
-      timeDiff unit ms =
-        let ceiled = T.ceiling unit zone a in
+      timeDiff ms =
+        let ceiled = ceilingUnit zone unit mult a in
         if toMs ceiled > toMs b then -1
-        else div (toMs b - toMs ceiled) ms
+        else div (div (toMs b - toMs ceiled) ms) mult
 
       div n1 n2 =
         floor (toFloat n1 / toFloat n2)
   in
-  { year = diff T.Year .year + 1
-  , month = diff T.Month (\d -> d.month + d.year * 12) + 1
-  , day = timeDiff T.Day oneDay + 1
-  , hour = timeDiff T.Hour oneHour + 1
-  , minute = timeDiff T.Minute oneMinute + 1
-  , second = timeDiff T.Second oneSecond + 1
-  , millisecond = (toMs b - toMs a) + 1
-  }
+  case unit of
+    Millisecond -> timeDiff oneMs + 1
+    Second -> timeDiff oneSecond + 1
+    Minute -> timeDiff oneMinute + 1
+    Hour -> timeDiff oneHour + 1
+    Day -> timeDiff oneDay + 1
+    Month -> diff (\d -> d.month + d.year * 12) + 1
+    Year -> diff .year + 1
 
 
 niceMultiples : Unit -> List Int
@@ -200,6 +196,24 @@ monthAsInt month =
     Time.Dec -> 12
 
 
+intAsMonth : Int -> Time.Month
+intAsMonth int =
+  case int of
+    1 -> Time.Jan
+    2 -> Time.Feb
+    3 -> Time.Mar
+    4 -> Time.Apr
+    5 -> Time.May
+    6 -> Time.Jun
+    7 -> Time.Jul
+    8 -> Time.Aug
+    9 -> Time.Sep
+    10 -> Time.Oct
+    11 -> Time.Nov
+    12 -> Time.Dec
+    _ -> Time.Dec
+
+
 toMs : Time.Posix -> Int
 toMs =
   Time.posixToMillis
@@ -208,6 +222,11 @@ toMs =
 fromMs : Int -> Time.Posix
 fromMs =
   Time.millisToPosix
+
+
+oneMs : Int
+oneMs =
+  1
 
 
 oneSecond : Int
@@ -228,3 +247,90 @@ oneHour =
 oneDay : Int
 oneDay =
   oneHour * 24
+
+
+
+-- ROUND DATES
+
+
+ceilingUnit : Time.Zone -> Unit -> Int -> Time.Posix -> Time.Posix
+ceilingUnit zone unit mult =
+  case unit of
+    Millisecond -> ceilingMs zone mult
+    Second -> ceilingSecond zone mult
+    Minute -> ceilingMinute zone mult
+    Hour -> ceilingHour zone mult
+    Day -> ceilingDay zone mult
+    Month -> ceilingMonth zone mult
+    Year -> ceilingYear zone mult
+
+
+ceilingMs : Time.Zone -> Int -> Time.Posix -> Time.Posix
+ceilingMs zone mult stamp =
+  let parts = T.posixToParts zone stamp
+      rem = remainderBy mult parts.millisecond
+  in
+  if rem == 0
+  then T.partsToPosix zone parts
+  else T.add T.Millisecond (mult - rem) zone stamp
+
+
+ceilingSecond : Time.Zone -> Int -> Time.Posix -> Time.Posix
+ceilingSecond zone mult stamp =
+  let parts = T.posixToParts zone (T.ceiling T.Second zone stamp)
+      rem = remainderBy mult parts.second
+  in
+  if rem == 0
+  then T.partsToPosix zone parts
+  else T.add T.Second (mult - rem) zone stamp
+
+
+ceilingMinute : Time.Zone -> Int -> Time.Posix -> Time.Posix
+ceilingMinute zone mult stamp =
+  let parts = T.posixToParts zone (T.ceiling T.Minute zone stamp)
+      rem = remainderBy mult parts.minute
+  in
+  if rem == 0
+  then T.partsToPosix zone parts
+  else T.add T.Minute (mult - rem) zone stamp
+
+
+ceilingHour : Time.Zone -> Int -> Time.Posix -> Time.Posix
+ceilingHour zone mult stamp =
+  let parts = T.posixToParts zone (T.ceiling T.Hour zone stamp)
+      rem = remainderBy mult parts.hour
+  in
+  if rem == 0
+  then T.partsToPosix zone parts
+  else T.add T.Hour (mult - rem) zone stamp
+
+
+ceilingDay : Time.Zone -> Int -> Time.Posix -> Time.Posix
+ceilingDay zone mult stamp =
+  if mult == 7 then
+    T.ceiling T.Week zone stamp
+  else
+    T.ceiling T.Day zone stamp
+
+
+ceilingMonth : Time.Zone -> Int -> Time.Posix -> Time.Posix
+ceilingMonth zone mult stamp =
+  let parts = T.posixToParts zone (T.ceiling T.Month zone stamp)
+      monthInt = monthAsInt parts.month -- 12
+      rem = remainderBy mult (monthInt - 1) -- 11 % 3 = 2
+      newMonth = if rem == 0 then monthInt else monthInt - rem + mult -- 12 - 2 + 3 = 13
+  in
+  T.partsToPosix zone <|
+    if newMonth > 12
+    then { parts | year = parts.year + 1, month = intAsMonth (newMonth - 12)  }
+    else { parts | month = intAsMonth newMonth }
+
+
+ceilingYear : Time.Zone -> Int -> Time.Posix -> Time.Posix
+ceilingYear zone mult stamp =
+  let parts = T.posixToParts zone (T.ceiling T.Year zone stamp)
+      rem = remainderBy mult parts.year
+      newYear = if rem == 0 then parts.year else parts.year - rem + mult
+  in
+  T.partsToPosix zone { parts | year = newYear }
+
