@@ -10,6 +10,92 @@ import Time.Extra as T
 
 suite : Test
 suite =
+  describe "values"
+   [ test "1" <| \_ ->
+        let result =
+              values Time.utc 3
+                (toPosix (T.Parts 2020 Time.Jan 4 0 0 0 0))
+                (toPosix (T.Parts 2020 Time.Apr 1 0 0 0 0))
+
+            expected =
+              ( Month, 1 )
+        in
+        Expect.equal expected result
+    , test "2" <| \_ ->
+        let result =
+              values Time.utc 3
+                (toPosix (T.Parts 2020 Time.Jan 4 0 0 0 0))
+                (toPosix (T.Parts 2020 Time.Jan 10 0 0 0 0))
+
+            expected =
+              ( Day, 2 )
+        in
+        Expect.equal expected result
+    ]
+
+
+getMultiplesSuite : Test
+getMultiplesSuite =
+  describe "getMultiples"
+    [ test "1" <| \_ ->
+        let result =
+              getMultiples Time.utc
+                (toPosix (T.Parts 2020 Time.Jan 4 0 0 0 0))
+                (toPosix (T.Parts 2020 Time.Apr 1 0 0 0 0))
+
+            expected =
+              Diff 0 3 89 2113 126721 7603201 7603200001
+        in
+        Expect.equal expected result
+    , test "2" <| \_ ->
+        let result =
+              getMultiples Time.utc
+                (toPosix (T.Parts 2020 Time.Jan 4 0 0 0 0))
+                (toPosix (T.Parts 2021 Time.Apr 1 0 0 0 0))
+
+            expected =
+              Diff 1 15 454 10873 652321 39139201 39139200001
+        in
+        Expect.equal expected result
+
+    , test "3" <| \_ ->
+        let result =
+              getMultiples Time.utc
+                (toPosix (T.Parts 2020 Time.Jan 4 0 0 0 0))
+                (toPosix (T.Parts 2020 Time.Jan 9 0 0 0 0))
+
+            expected =
+              Diff 0 0 6 121 7201 432001 432000001
+        in
+        Expect.equal expected result
+
+    , test "4" <| \_ ->
+        let result =
+              getMultiples Time.utc
+                (toPosix (T.Parts 2020 Time.Jan 1 0 0 0 1))
+                (toPosix (T.Parts 2020 Time.Jan 1 0 0 0 3))
+
+            expected =
+              Diff 0 0 0 0 0 0 3
+        in
+        Expect.equal expected result
+
+    , test "5" <| \_ ->
+        let result =
+              getMultiples Time.utc
+                (toPosix (T.Parts 2020 Time.Jan 1 1 1 1 1))
+                (toPosix (T.Parts 2020 Time.Jan 1 1 1 1 1))
+
+            expected =
+              Diff 0 0 0 0 0 0 1
+        in
+        Expect.equal expected result
+    ]
+
+
+
+helperSuite : Test
+helperSuite =
   describe "Diff"
     [ test "getDiff 1" <| \_ ->
         let result =
