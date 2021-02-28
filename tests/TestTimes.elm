@@ -10,830 +10,373 @@ import Time.Extra as T
 
 suite : Test
 suite =
-  describe "values"
-   [ test "1" <| \_ ->
-        let result =
-              values Time.utc 3
-                (toPosix (T.Parts 2020 Time.Jan 4 0 0 0 0))
-                (toPosix (T.Parts 2020 Time.Apr 1 0 0 0 0))
-                -- Diff 0 3 89 2113 126721 7603201 7603200001
-                -- F M A
-
-            expected =
-              ( Month, 1 )
-        in
-        Expect.equal expected result
-    , test "2" <| \_ ->
-        let result =
-              values Time.utc 3
-                (toPosix (T.Parts 2020 Time.Jan 4 0 0 0 0))
-                (toPosix (T.Parts 2020 Time.Jan 10 0 0 0 0))
-                -- 4 5 6 7 8 9 10
-
-            expected =
-              ( Day, 3 )
-        in
-        Expect.equal expected result
-
-    , test "3" <| \_ ->
-        let result =
-              values Time.utc 7
-                (toPosix (T.Parts 2020 Time.Jan 4 0 0 0 0))
-                (toPosix (T.Parts 2020 Time.Jan 10 0 0 0 0))
-                -- 4 5 6 7 8 9 10
-
-            expected =
-              ( Day, 1 )
-        in
-        Expect.equal expected result
-
-
-    , test "4" <| \_ ->
-        let result =
-              values Time.utc 18
-                (toPosix (T.Parts 2020 Time.Jan 4 0 0 0 0))
-                (toPosix (T.Parts 2024 Time.Jan 10 0 0 0 0))
-
-            expected =
-              ( Month, 3 )
-        in
-        Expect.equal expected result
-
-    , test "4-2" <| \_ ->
-        let result =
-              values Time.utc 5
-                (toPosix (T.Parts 2020 Time.Jan 4 0 0 0 0))
-                (toPosix (T.Parts 2024 Time.Jan 10 0 0 0 0))
-
-            expected =
-              ( Year, 1 )
-        in
-        Expect.equal expected result
-
-
-    , test "4-3" <| \_ ->
-        let result =
-              values Time.utc 105
-                (toPosix (T.Parts 2020 Time.Jan 4 0 0 0 0))
-                (toPosix (T.Parts 2024 Time.Jan 10 0 0 0 0))
-
-            expected =
-              ( Day, 14 )
-        in
-        Expect.equal expected result
-
-    , test "4-A" <| \_ ->
-        let result =
-              getNumOfTicks Time.utc Day 14
-                (toPosix (T.Parts 2020 Time.Jan 4 0 0 0 0))
-                (toPosix (T.Parts 2024 Time.Jan 10 0 0 0 0))
-
-            expected =
-              105
-        in
-        Expect.equal expected result
-
-    , test "5-1" <| \_ ->
-        let result =
-              values Time.utc 210
-                (toPosix (T.Parts 2020 Time.Jan 4 0 0 0 0))
-                (toPosix (T.Parts 2124 Time.Jan 10 0 0 0 0))
-
-            expected =
-              ( Month, 6 )
-        in
-        Expect.equal expected result
-
-    , test "5-A" <| \_ ->
-        let result =
-              getNumOfTicks Time.utc Month 6
-                (toPosix (T.Parts 2020 Time.Jan 4 0 0 0 0))
-                (toPosix (T.Parts 2124 Time.Jan 10 0 0 0 0))
-
-            expected =
-              208
-        in
-        Expect.equal expected result
-
-
-    , test "6-1" <| \_ ->
-        let result =
-              values Time.utc 2
-                (toPosix (T.Parts 2020 Time.Jan 4 0 0 0 0))
-                (toPosix (T.Parts 2224 Time.Jan 10 0 0 0 0))
-                -- 2100  2200
-
-            expected =
-              ( Year, 100 )
-        in
-        Expect.equal expected result
-
-
-    , test "6-2" <| \_ ->
-        let result =
-              values Time.utc 2
-                (toPosix (T.Parts 2020 Time.Jan 4 0 0 0 0))
-                (toPosix (T.Parts 4224 Time.Jan 10 0 0 0 0))
-
-            expected =
-              ( Year, 1000 )
-        in
-        Expect.equal expected result
-
-    , test "6-A" <| \_ ->
-        let result =
-              getNumOfTicks Time.utc Year 100
-                (toPosix (T.Parts 2020 Time.Jan 4 0 0 0 0))
-                (toPosix (T.Parts 2224 Time.Jan 10 0 0 0 0))
-
-            expected =
-              2
-        in
-        Expect.equal expected result
-
-
-    , test "7-1" <| \_ ->
-        let result =
-              values Time.utc 210
-                (toPosix (T.Parts 2020 Time.Feb 1 0 0 0 0))
-                (toPosix (T.Parts 2020 Time.Feb 1 16 0 0 0))
-
-            expected =
-              ( Minute, 5 )
-        in
-        Expect.equal expected result
-
-
-    , test "7-A" <| \_ ->
-        let result =
-              getNumOfTicks Time.utc Minute 5
-                (toPosix (T.Parts 2020 Time.Feb 1 0 0 0 0))
-                (toPosix (T.Parts 2020 Time.Feb 1 16 0 0 0))
-
-            expected =
-              193
-        in
-        Expect.equal expected result
-
-    , test "8-1" <| \_ ->
-        let result =
-              values Time.utc 4
-                (toPosix (T.Parts 2020 Time.Jan 1 0 15 0 0))
-                (toPosix (T.Parts 2020 Time.Jan 1 2 0 0 0))
-                -- 0:30 1 1:30 2
-
-            expected =
-              ( Minute, 30 )
-        in
-        Expect.equal expected result
-
-    , test "8-2" <| \_ ->
-        let result =
-              values Time.utc 10
-                (toPosix (T.Parts 2020 Time.Jan 1 0 15 0 0))
-                (toPosix (T.Parts 2020 Time.Jan 1 2 0 0 0))
-                -- 0:15 0:30 0:45 1 0:15 1:30 1:45 2
-
-            expected =
-              ( Minute, 15 )
-        in
-        Expect.equal expected result
-
-
-    , test "8-3" <| \_ ->
-        let result =
-              values Time.utc 10
-                (toPosix (T.Parts 2020 Time.Jan 1 0 15 0 0))
-                (toPosix (T.Parts 2020 Time.Jan 1 2 0 0 0))
-                -- 0:20 0:30 0:40 0:50 1 0:10 0:20 1:30 0:40 1:50 2
-
-            expected =
-              ( Minute, 15 )
-        in
-        Expect.equal expected result
-
-
-    , test "8-4" <| \_ ->
-        let result =
-              values Time.utc 22
-                (toPosix (T.Parts 2020 Time.Jan 1 0 15 0 0))
-                (toPosix (T.Parts 2020 Time.Jan 1 2 0 0 0))
-
-            expected =
-              ( Minute, 5 )
-        in
-        Expect.equal expected result
-
-
-    , test "8-A" <| \_ ->
-        let result =
-              getNumOfTicks Time.utc Minute 5
-                (toPosix (T.Parts 2020 Time.Jan 1 0 0 0 0))
-                (toPosix (T.Parts 2020 Time.Jan 1 2 0 0 0))
-
-            expected =
-              25
-        in
-        Expect.equal expected result
-
-    , test "9-1" <| \_ ->
-        let result =
-              values Time.utc 4
-                (toPosix (T.Parts 2020 Time.Jan 1 0 4 0 0))
-                (toPosix (T.Parts 2020 Time.Jan 1 0 49 0 0))
-                -- 0:15 0:30 0:45
-
-            expected =
-              ( Minute, 10 )
-        in
-        Expect.equal expected result
-
-
-    , test "9-2" <| \_ ->
-        let result =
-              values Time.utc 7
-                (toPosix (T.Parts 2020 Time.Jan 1 0 4 0 0))
-                (toPosix (T.Parts 2020 Time.Jan 1 0 49 0 0))
-                -- 0:10 0:20 0:30 0:40
-
-            expected =
-              ( Minute, 10 )
-        in
-        Expect.equal expected result
-
-    , test "9-3" <| \_ ->
-        let result =
-              values Time.utc 10
-                (toPosix (T.Parts 2020 Time.Jan 1 0 4 0 0))
-                (toPosix (T.Parts 2020 Time.Jan 1 0 49 0 0))
-                -- 0:15 0:10 0:15 0:20 0:25 0:30 0:35 0:40 0:45
-
-            expected =
-              ( Minute, 5 )
-        in
-        Expect.equal expected result
-
-
-    , test "9-A" <| \_ ->
-        let result =
-              getNumOfTicks Time.utc Minute 5
-                (toPosix (T.Parts 2020 Time.Jan 1 0 4 0 0))
-                (toPosix (T.Parts 2020 Time.Jan 1 0 49 0 0))
-
-            expected =
-              9
-        in
-        Expect.equal expected result
-
-
-    , test "10-1" <| \_ ->
-        let result =
-              values Time.utc 4
-                (toPosix (T.Parts 2020 Time.Jan 1 0 0 4 0))
-                (toPosix (T.Parts 2020 Time.Jan 1 0 0 49 0))
-
-            expected =
-              ( Second, 10 )
-        in
-        Expect.equal expected result
-
-    , test "10-A" <| \_ ->
-        let result =
-              getNumOfTicks Time.utc Second 15
-                (toPosix (T.Parts 2020 Time.Jan 1 0 0 4 0))
-                (toPosix (T.Parts 2020 Time.Jan 1 0 0 49 0))
-
-            expected =
-              3
-        in
-        Expect.equal expected result
-
-    , test "11-1" <| \_ ->
-        let result =
-              values Time.utc 4
-                (toPosix (T.Parts 2020 Time.Jan 1 0 0 0 256))
-                (toPosix (T.Parts 2020 Time.Jan 1 0 0 0 940))
-
-            expected =
-              ( Millisecond, 200 )
-        in
-        Expect.equal expected result
-
-    , test "11-A" <| \_ ->
-        let result =
-              getNumOfTicks Time.utc Millisecond 200
-                (toPosix (T.Parts 2020 Time.Jan 1 0 0 0 256))
-                (toPosix (T.Parts 2020 Time.Jan 1 0 0 0 940))
-
-            expected =
-              3
-        in
-        Expect.equal expected result
+  describe "best unit for"
+   [ testBestUnit "several months with month interval" 3
+        (T.Parts 2020 Time.Jan 4 0 0 0 0)
+        (T.Parts 2020 Time.Apr 1 0 0 0 0)
+        ( Month, 1 )
+
+    , testBestUnit "several day interval" 3
+        (T.Parts 2020 Time.Jan 4 0 0 0 0)
+        (T.Parts 2020 Time.Jan 10 0 0 0 0)
+        ( Day, 3 )
+
+    , testBestUnit "a week with single day interval" 7
+        (T.Parts 2020 Time.Jan 4 0 0 0 0)
+        (T.Parts 2020 Time.Jan 10 0 0 0 0)
+        ( Day, 1 )
+
+    , testBestUnit "some years with quarter interval" 18
+        (T.Parts 2020 Time.Jan 4 0 0 0 0)
+        (T.Parts 2024 Time.Jan 10 0 0 0 0)
+        ( Month, 3 )
+
+    , testBestUnit "some years with single year interval" 5
+        (T.Parts 2020 Time.Jan 4 0 0 0 0)
+        (T.Parts 2024 Time.Jan 10 0 0 0 0)
+        ( Year, 1 )
+
+    , testBestUnit "many years with day interval" 105
+        (T.Parts 2020 Time.Jan 4 0 0 0 0)
+        (T.Parts 2024 Time.Jan 10 0 0 0 0)
+        ( Day, 14 )
+
+    , testBestUnit "many years with some ticks" 210
+        (T.Parts 2020 Time.Jan 4 0 0 0 0)
+        (T.Parts 2124 Time.Jan 10 0 0 0 0)
+        ( Month, 6 )
+
+    , testBestUnit "many years with few ticks" 2
+        (T.Parts 2020 Time.Jan 4 0 0 0 0)
+        (T.Parts 2224 Time.Jan 10 0 0 0 0)
+        ( Year, 100 )
+
+    , testBestUnit "many many years with few ticks" 2
+        (T.Parts 2020 Time.Jan 4 0 0 0 0)
+        (T.Parts 4224 Time.Jan 10 0 0 0 0)
+        ( Year, 1000 )
+
+    , testBestUnit "hours with many many ticks" 210
+        (T.Parts 2020 Time.Feb 1 0 0 0 0)
+        (T.Parts 2020 Time.Feb 1 16 0 0 0)
+        ( Minute, 5 )
+
+    , testBestUnit "minutes crossing hours with few ticks" 4
+        (T.Parts 2020 Time.Jan 1 0 15 0 0)
+        (T.Parts 2020 Time.Jan 1 2 0 0 0)
+        ( Minute, 30 )
+
+    , testBestUnit "minutes crossing hours with some ticks" 10
+        (T.Parts 2020 Time.Jan 1 0 15 0 0)
+        (T.Parts 2020 Time.Jan 1 2 0 0 0)
+        ( Minute, 15 )
+
+    , testBestUnit "minutes crossing hours with many ticks" 22
+        (T.Parts 2020 Time.Jan 1 0 15 0 0)
+        (T.Parts 2020 Time.Jan 1 2 0 0 0)
+        ( Minute, 5 )
+
+    , testBestUnit "minutes diff" 4
+        (T.Parts 2020 Time.Jan 1 0 4 0 0)
+        (T.Parts 2020 Time.Jan 1 0 49 0 0)
+        ( Minute, 10 )
+
+    , testBestUnit "minutes diff with more ticks" 7
+        (T.Parts 2020 Time.Jan 1 0 4 0 0)
+        (T.Parts 2020 Time.Jan 1 0 49 0 0)
+        ( Minute, 10 )
+
+    , testBestUnit "seconds diff" 10
+        (T.Parts 2020 Time.Jan 1 0 4 0 0)
+        (T.Parts 2020 Time.Jan 1 0 49 0 0)
+        ( Minute, 5 )
+
+    , testBestUnit "seconds diff with less ticks" 4
+        (T.Parts 2020 Time.Jan 1 0 0 4 0)
+        (T.Parts 2020 Time.Jan 1 0 0 49 0)
+        ( Second, 10 )
+
+    , testBestUnit "milliseconds diff" 4
+        (T.Parts 2020 Time.Jan 1 0 0 0 256)
+        (T.Parts 2020 Time.Jan 1 0 0 0 940)
+        ( Millisecond, 200 )
     ]
 
 
-getNumOfTicksSuite : Test
-getNumOfTicksSuite =
+testBestUnit : String -> Int -> T.Parts -> T.Parts -> ( Unit, Int ) -> Test
+testBestUnit name amount a b expected =
+  let ( unit, mult ) =
+        values Time.utc amount (toPosix a) (toPosix b)
+  in
+  describe name
+    [ test "best unit" <| \_ ->
+        Expect.equal expected ( unit, mult )
+    , test "best unit is less than or equal to upper limit" <| \_ ->
+        let numOfTicks =
+              getNumOfTicks Time.utc unit mult (toPosix a) (toPosix b)
+        in
+        Expect.atMost amount numOfTicks
+    ]
+
+
+
+numOfTicksSuite : Test
+numOfTicksSuite =
   describe "getNumOfTicks"
-    [ test "1" <| \_ ->
-        let result =
-              getNumOfTicks Time.utc Month 1
-                (toPosix (T.Parts 2020 Time.Jan 4 0 0 0 0))
-                (toPosix (T.Parts 2020 Time.Apr 1 0 0 0 0))
+    [ testNumOfTicks "when small months diff" Month 1
+        (T.Parts 2020 Time.Jan 4 0 0 0 0)
+        (T.Parts 2020 Time.Apr 1 0 0 0 0)
+        3
 
-            expected =
-              3
-        in
-        Expect.equal expected result
-    , test "2" <| \_ ->
-        let result =
-              getNumOfTicks Time.utc Month 1
-                (toPosix (T.Parts 2020 Time.Jan 4 0 0 0 0))
-                (toPosix (T.Parts 2021 Time.Apr 1 0 0 0 0))
+    , testNumOfTicks "when crossing months diff" Month 1
+        (T.Parts 2020 Time.Jan 4 0 0 0 0)
+        (T.Parts 2021 Time.Apr 1 0 0 0 0)
+        15
 
-            expected =
-              15
-        in
-        Expect.equal expected result
+    , testNumOfTicks "when small day diff" Day 1
+        (T.Parts 2020 Time.Jan 4 0 0 0 0)
+        (T.Parts 2020 Time.Jan 9 0 0 0 0)
+        6
 
-    , test "3" <| \_ ->
-        let result =
-              getNumOfTicks Time.utc Day 1
-                (toPosix (T.Parts 2020 Time.Jan 4 0 0 0 0))
-                (toPosix (T.Parts 2020 Time.Jan 9 0 0 0 0))
+    , testNumOfTicks "when other small day diff" Day 1
+        (T.Parts 2020 Time.Jan 4 0 0 0 0)
+        (T.Parts 2020 Time.Jan 10 0 0 0 0)
+        7
 
-            expected =
-              6
-        in
-        Expect.equal expected result
+    , testNumOfTicks "when small milliseconds diff" Millisecond 1
+        (T.Parts 2020 Time.Jan 1 0 0 0 1)
+        (T.Parts 2020 Time.Jan 1 0 0 0 3)
+        3
 
-    , test "9" <| \_ ->
-        let result =
-              getNumOfTicks Time.utc Day 1
-                (toPosix (T.Parts 2020 Time.Jan 4 0 0 0 0))
-                (toPosix (T.Parts 2020 Time.Jan 10 0 0 0 0))
+    , testNumOfTicks "when no difference" Millisecond 1
+        (T.Parts 2020 Time.Jan 1 1 1 1 1)
+        (T.Parts 2020 Time.Jan 1 1 1 1 1)
+        1
+    ]
 
-            expected =
-              7
-        in
-        Expect.equal expected result
 
-    , test "4" <| \_ ->
-        let result =
-              getNumOfTicks Time.utc Millisecond 1
-                (toPosix (T.Parts 2020 Time.Jan 1 0 0 0 1))
-                (toPosix (T.Parts 2020 Time.Jan 1 0 0 0 3))
+testNumOfTicks : String -> Unit -> Int -> T.Parts -> T.Parts -> Int -> Test
+testNumOfTicks name unit mult a b expected =
+  test name <| \_ ->
+    let result =
+          getNumOfTicks Time.utc unit mult (toPosix a) (toPosix b)
+    in
+    Expect.equal expected result
 
-            expected =
-              3
-        in
-        Expect.equal expected result
 
-    , test "5" <| \_ ->
-        let result =
-              getNumOfTicks Time.utc Millisecond 1
-                (toPosix (T.Parts 2020 Time.Jan 1 1 1 1 1))
-                (toPosix (T.Parts 2020 Time.Jan 1 1 1 1 1))
+diffDateSuite : Test
+diffDateSuite =
+  describe "difference between two dates"
+    [ testDiff "offset months"
+        (T.Parts 2020 Time.Jan 4 0 0 0 0)
+        (T.Parts 2020 Time.Apr 1 0 0 0 0)
+        (Diff 0 2 27 0 0 0 0)
 
-            expected =
-              1
-        in
-        Expect.equal expected result
+    , testDiff "exactly on year"
+        (T.Parts 2020 Time.Jan 1 0 0 0 0)
+        (T.Parts 2021 Time.Jan 1 0 0 0 0)
+        (Diff 1 0 0 0 0 0 0)
+
+    , testDiff "crossing months"
+        (T.Parts 2020 Time.Jan 1 0 0 0 0)
+        (T.Parts 2020 Time.Mar 1 0 0 0 0)
+        (Diff 0 2 0 0 0 0 0)
+
+    , testDiff "crossing hours"
+        (T.Parts 2020 Time.Jan 1 16 0 0 0)
+        (T.Parts 2020 Time.Jan 3 14 0 0 0)
+        (Diff 0 0 1 22 0 0 0)
+
+    , testDiff "crossing minutes"
+        (T.Parts 2020 Time.Jan 1 16 45 0 0)
+        (T.Parts 2020 Time.Jan 3 14 30 0 0)
+        (Diff 0 0 1 21 45 0 0)
+
+    , testDiff "crossing seconds"
+        (T.Parts 2020 Time.Jan 1 16 45 45 0)
+        (T.Parts 2020 Time.Jan 3 14 30 30 0)
+        (Diff 0 0 1 21 44 45 0)
+
+    , testDiff "crossing years"
+        (T.Parts 2020 Time.Feb 1 0 0 0 0)
+        (T.Parts 2021 Time.Jan 3 0 0 0 0)
+        (Diff 0 11 2 0 0 0 0)
+
+    , testDiff "crossing years a different way"
+        (T.Parts 2020 Time.Feb 2 0 0 0 0)
+        (T.Parts 2022 Time.Jan 1 0 0 0 0)
+        (Diff 1 10 30 0 0 0 0)
+
+    , testDiff "milliseconds"
+        (T.Parts 2020 Time.Feb 1 16 45 45 500)
+        (T.Parts 2021 Time.Jan 3 14 30 30 200)
+        (Diff 0 11 1 21 44 44 700)
     ]
 
 
 
-helperSuite : Test
-helperSuite =
-  describe "Diff"
-    [ test "getDiff 1" <| \_ ->
-        let result =
-              getDiff Time.utc
-                (toPosix (T.Parts 2020 Time.Jan 4 0 0 0 0))
-                (toPosix (T.Parts 2020 Time.Apr 1 0 0 0 0))
-
-            expected =
-              Diff 0 2 27 0 0 0 0
-        in
-        Expect.equal expected result
-
-    , test "getDiff 2" <| \_ ->
-        let result =
-              getDiff Time.utc
-                (toPosix (T.Parts 2020 Time.Jan 1 0 0 0 0))
-                (toPosix (T.Parts 2021 Time.Jan 1 0 0 0 0))
-
-            expected =
-              Diff 1 0 0 0 0 0 0
-        in
-        Expect.equal expected result
-
-    , test "getDiff 3" <| \_ ->
-        let result =
-              getDiff Time.utc
-                (toPosix (T.Parts 2020 Time.Feb 2 0 0 0 0))
-                (toPosix (T.Parts 2022 Time.Jan 1 0 0 0 0))
-
-            expected =
-              Diff 1 10 30 0 0 0 0
-        in
-        Expect.equal expected result
-
-    , test "getDiff 4" <| \_ ->
-        let result =
-              getDiff Time.utc
-                (toPosix (T.Parts 2020 Time.Jan 1 0 0 0 0))
-                (toPosix (T.Parts 2020 Time.Mar 1 0 0 0 0))
-
-            expected =
-              Diff 0 2 0 0 0 0 0
-        in
-        Expect.equal expected result
-
-    , test "getDiff 5" <| \_ ->
-        let result =
-              getDiff Time.utc
-                (toPosix (T.Parts 2020 Time.Jan 1 16 0 0 0))
-                (toPosix (T.Parts 2020 Time.Jan 3 14 0 0 0))
-
-            expected =
-              Diff 0 0 1 22 0 0 0
-        in
-        Expect.equal expected result
-
-    , test "getDiff 6" <| \_ ->
-        let result =
-              getDiff Time.utc
-                (toPosix (T.Parts 2020 Time.Jan 1 16 45 0 0))
-                (toPosix (T.Parts 2020 Time.Jan 3 14 30 0 0))
-
-            expected =
-              Diff 0 0 1 21 45 0 0
-        in
-        Expect.equal expected result
-
-    , test "getDiff 7" <| \_ ->
-        let result =
-              getDiff Time.utc
-                (toPosix (T.Parts 2020 Time.Jan 1 16 45 45 0))
-                (toPosix (T.Parts 2020 Time.Jan 3 14 30 30 0))
-
-            expected =
-              Diff 0 0 1 21 44 45 0
-        in
-        Expect.equal expected result
-
-    , test "getDiff 8" <| \_ ->
-        let result =
-              getDiff Time.utc
-                (toPosix (T.Parts 2020 Time.Feb 1 0 0 0 0))
-                (toPosix (T.Parts 2021 Time.Jan 3 0 0 0 0))
-
-            expected =
-              Diff 0 11 2 0 0 0 0
-        in
-        Expect.equal expected result
-
-    , test "getDiff 9" <| \_ ->
-        let result =
-              getDiff Time.utc
-                (toPosix (T.Parts 2020 Time.Feb 1 16 45 45 500))
-                (toPosix (T.Parts 2021 Time.Jan 3 14 30 30 200))
-
-            expected =
-              Diff 0 11 1 21 44 44 700
-        in
-        Expect.equal expected result
-    ]
+testDiff : String -> T.Parts -> T.Parts -> Diff -> Test
+testDiff name a b expected =
+  test name <| \_ ->
+    let result =
+          getDiff Time.utc (toPosix a) (toPosix b)
+    in
+    Expect.equal expected result
 
 
 
 ceilingSuit : Test
 ceilingSuit =
   describe "ceilingX"
-    [ describe "ceilingYear"
-        [ test "1" <| \_ ->
-            let result =
-                  ceilingYear Time.utc 100
-                    (toPosix (T.Parts 2020 Time.Jan 4 0 0 0 0))
+    [ describe "years"
+        [ testCeiling "ceil correctly" Year 100
+            (T.Parts 2020 Time.Jan 4 0 0 0 0)
+            (T.Parts 2100 Time.Jan 1 0 0 0 0)
 
-                expected =
-                  toPosix (T.Parts 2100 Time.Jan 1 0 0 0 0)
-            in
-            Expect.equal expected result
+        , testCeiling "ceil correctly with 10s" Year 10
+            (T.Parts 2020 Time.Jan 4 0 0 0 0)
+            (T.Parts 2030 Time.Jan 1 0 0 0 0)
 
-        , test "2" <| \_ ->
-            let result =
-                  ceilingYear Time.utc 10
-                    (toPosix (T.Parts 2020 Time.Jan 4 0 0 0 0))
-                    |> fromPosix
+        , testCeiling "ceil correctly with 25s" Year 25
+            (T.Parts 2020 Time.Jan 5 0 0 0 0)
+            (T.Parts 2025 Time.Jan 1 0 0 0 0)
 
-                expected =
-                  T.Parts 2030 Time.Jan 1 0 0 0 0
-            in
-            Expect.equal expected result
+        , testCeiling "ceil correctly with 200s" Year 200
+            (T.Parts 2020 Time.Jan 1 0 0 0 0)
+            (T.Parts 2200 Time.Jan 1 0 0 0 0)
 
-        , test "3" <| \_ ->
-            let result =
-                  ceilingYear Time.utc 10
-                    (toPosix (T.Parts 2020 Time.Jan 1 0 0 0 0))
+        , testCeiling "ceil correctly with 1000s" Year 1000
+            (T.Parts 2020 Time.Dec 1 0 0 0 0)
+            (T.Parts 3000 Time.Jan 1 0 0 0 0)
 
-                expected =
-                  toPosix (T.Parts 2020 Time.Jan 1 0 0 0 0)
-            in
-            Expect.equal expected result
-
-        , test "4" <| \_ ->
-            let result =
-                  ceilingYear Time.utc 200
-                    (toPosix (T.Parts 2020 Time.Jan 1 0 0 0 0))
-
-                expected =
-                  toPosix (T.Parts 2200 Time.Jan 1 0 0 0 0)
-            in
-            Expect.equal expected result
-
-        , test "5" <| \_ ->
-            let result =
-                  ceilingYear Time.utc 1000
-                    (toPosix (T.Parts 2020 Time.Dec 1 0 0 0 0))
-                    |> fromPosix
-
-                expected =
-                  T.Parts 3000 Time.Jan 1 0 0 0 0
-            in
-            Expect.equal expected result
+        , testCeiling "ceil correctly when already correct" Year 10
+            (T.Parts 2020 Time.Jan 1 0 0 0 0)
+            (T.Parts 2020 Time.Jan 1 0 0 0 0)
         ]
 
-    , describe "ceilingMonth"
-        [ test "1" <| \_ ->
-            let result =
-                  ceilingMonth Time.utc 2
-                    (toPosix (T.Parts 2020 Time.Jan 4 0 0 0 0))
-                    |> fromPosix
+    , describe "months"
+        [ testCeiling "ceil correctly" Month 2
+            (T.Parts 2020 Time.Jan 4 0 0 0 0)
+            (T.Parts 2020 Time.Mar 1 0 0 0 0)
 
-                expected =
-                  T.Parts 2020 Time.Mar 1 0 0 0 0
-            in
-            Expect.equal expected result
+        , testCeiling "ceil correctly with quarters" Month 3
+            (T.Parts 2020 Time.May 1 0 0 0 0)
+            (T.Parts 2020 Time.Jul 1 0 0 0 0)
 
-        , test "2" <| \_ ->
-            let result =
-                  ceilingMonth Time.utc 2
-                    (toPosix (T.Parts 2020 Time.Jan 1 0 0 0 0))
-                    |> fromPosix
+        , testCeiling "ceil correctly with half years" Month 6
+            (T.Parts 2020 Time.May 1 0 0 0 0)
+            (T.Parts 2020 Time.Jul 1 0 0 0 0)
 
-                expected =
-                  T.Parts 2020 Time.Jan 1 0 0 0 0
-            in
-            Expect.equal expected result
+        , testCeiling "ceil correctly when already correct" Month 6
+            (T.Parts 2020 Time.Jan 1 0 0 0 0)
+            (T.Parts 2020 Time.Jan 1 0 0 0 0)
 
-        , test "3" <| \_ ->
-            let result =
-                  ceilingMonth Time.utc 3
-                    (toPosix (T.Parts 2020 Time.May 1 0 0 0 0))
-                    |> fromPosix
-
-                expected =
-                  T.Parts 2020 Time.Jul 1 0 0 0 0
-            in
-            Expect.equal expected result
-
-        , test "4" <| \_ ->
-            let result =
-                  ceilingMonth Time.utc 3
-                    (toPosix (T.Parts 2020 Time.Dec 1 0 0 0 0))
-                    |> fromPosix
-
-                expected =
-                  T.Parts 2021 Time.Jan 1 0 0 0 0
-            in
-            Expect.equal expected result
-
-        , test "5" <| \_ ->
-            let result =
-                  ceilingMonth Time.utc 6
-                    (toPosix (T.Parts 2020 Time.Dec 1 0 0 0 0))
-                    |> fromPosix
-
-                expected =
-                  T.Parts 2021 Time.Jan 1 0 0 0 0
-            in
-            Expect.equal expected result
-
-
+        , testCeiling "ceil correctly when overflowing" Month 3
+            (T.Parts 2020 Time.Dec 1 0 0 0 0)
+            (T.Parts 2021 Time.Jan 1 0 0 0 0)
         ]
 
-    , describe "ceilingDay"
-        [ test "1" <| \_ ->
-            let result =
-                  ceilingDay Time.utc 2
-                    (toPosix (T.Parts 2020 Time.Jan 4 2 0 0 0))
-                    |> fromPosix
+    , describe "days"
+        [ testCeiling "ceil correctly" Day 2
+            (T.Parts 2020 Time.Jan 4 2 0 0 0)
+            (T.Parts 2020 Time.Jan 5 0 0 0 0)
 
-                expected =
-                  T.Parts 2020 Time.Jan 5 0 0 0 0
-            in
-            Expect.equal expected result
+        , testCeiling "ceil correctly with weeks" Day 7
+            (T.Parts 2020 Time.Dec 31 2 0 0 0)
+            (T.Parts 2021 Time.Jan 4 0 0 0 0)
 
-        , test "2" <| \_ ->
-            let result =
-                  ceilingDay Time.utc 2
-                    (toPosix (T.Parts 2020 Time.Dec 31 2 0 0 0))
-                    |> fromPosix
+        , testCeiling "ceil correctly when already correct" Day 2
+            (T.Parts 2020 Time.Jan 4 0 0 0 0)
+            (T.Parts 2020 Time.Jan 4 0 0 0 0)
 
-                expected =
-                  T.Parts 2021 Time.Jan 1 0 0 0 0
-            in
-            Expect.equal expected result
-
-        , test "3" <| \_ ->
-            let result =
-                  ceilingDay Time.utc 7
-                    (toPosix (T.Parts 2020 Time.Dec 31 2 0 0 0))
-                    |> fromPosix
-
-                expected =
-                  T.Parts 2021 Time.Jan 4 0 0 0 0
-            in
-            Expect.equal expected result
-
-        , test "4" <| \_ ->
-            let result =
-                  ceilingDay Time.utc 1
-                    (toPosix (T.Parts 2020 Time.Mar 31 2 0 0 0))
-                    |> fromPosix
-
-                expected =
-                  T.Parts 2020 Time.Apr 1 0 0 0 0
-            in
-            Expect.equal expected result
+        , testCeiling "ceil correctly when overflowing" Day 2
+            (T.Parts 2020 Time.Dec 31 2 0 0 0)
+            (T.Parts 2021 Time.Jan 1 0 0 0 0)
         ]
 
-    , describe "ceilingHour"
-        [ test "1" <| \_ ->
-            let result =
-                  ceilingHour Time.utc 2
-                    (toPosix (T.Parts 2020 Time.Jan 4 3 0 0 0))
-                    |> fromPosix
+    , describe "hours"
+        [ testCeiling "ceil correctly" Hour 2
+            (T.Parts 2020 Time.Jan 4 3 0 0 0)
+            (T.Parts 2020 Time.Jan 4 4 0 0 0)
 
-                expected =
-                  T.Parts 2020 Time.Jan 4 4 0 0 0
-            in
-            Expect.equal expected result
+        , testCeiling "ceil correctly with thirds" Hour 3
+            (T.Parts 2020 Time.Jan 4 4 0 0 0)
+            (T.Parts 2020 Time.Jan 4 6 0 0 0)
 
-        , test "2" <| \_ ->
-            let result =
-                  ceilingHour Time.utc 2
-                    (toPosix (T.Parts 2020 Time.Jan 1 23 0 0 0))
-                    |> fromPosix
+        , testCeiling "ceil correctly with larger number" Hour 12
+            (T.Parts 2020 Time.Jan 4 3 0 0 0)
+            (T.Parts 2020 Time.Jan 4 12 0 0 0)
 
-                expected =
-                  T.Parts 2020 Time.Jan 2 0 0 0 0
-            in
-            Expect.equal expected result
+        , testCeiling "ceil correctly when already correct" Hour 6
+            (T.Parts 2020 Time.Jan 4 0 0 0 0)
+            (T.Parts 2020 Time.Jan 4 0 0 0 0)
 
-        , test "3" <| \_ ->
-            let result =
-                  ceilingHour Time.utc 3
-                    (toPosix (T.Parts 2020 Time.Jan 1 23 0 0 0))
-                    |> fromPosix
-
-                expected =
-                  T.Parts 2020 Time.Jan 2 0 0 0 0
-            in
-            Expect.equal expected result
-
-        , test "4" <| \_ ->
-            let result =
-                  ceilingHour Time.utc 3
-                    (toPosix (T.Parts 2020 Time.Jan 1 17 0 0 0))
-                    |> fromPosix
-
-                expected =
-                  T.Parts 2020 Time.Jan 1 18 0 0 0
-            in
-            Expect.equal expected result
-
-        , test "5" <| \_ ->
-            let result =
-                  ceilingHour Time.utc 1
-                    (toPosix (T.Parts 2020 Time.Jan 4 3 0 0 0))
-                    |> fromPosix
-
-                expected =
-                  T.Parts 2020 Time.Jan 4 3 0 0 0
-            in
-            Expect.equal expected result
+        , testCeiling "ceil correctly when overflowing" Hour 6
+            (T.Parts 2020 Time.Dec 31 23 0 0 0)
+            (T.Parts 2021 Time.Jan 1 0 0 0 0)
         ]
 
-    , describe "ceilingMinute"
-        [ test "1" <| \_ ->
-            let result =
-                  ceilingMinute Time.utc 15
-                    (toPosix (T.Parts 2020 Time.Jan 4 3 2 0 0))
-                    |> fromPosix
+    , describe "minutes"
+        [ testCeiling "ceil correctly" Minute 2
+            (T.Parts 2020 Time.Jan 4 3 1 0 0)
+            (T.Parts 2020 Time.Jan 4 3 2 0 0)
 
-                expected =
-                  T.Parts 2020 Time.Jan 4 3 15 0 0
-            in
-            Expect.equal expected result
+        , testCeiling "ceil correctly with larger number" Minute 15
+            (T.Parts 2020 Time.Jan 4 3 2 0 0)
+            (T.Parts 2020 Time.Jan 4 3 15 0 0)
 
-        , test "2" <| \_ ->
-            let result =
-                  ceilingMinute Time.utc 15
-                    (toPosix (T.Parts 2020 Time.Jan 4 3 0 0 0))
-                    |> fromPosix
+        , testCeiling "ceil correctly when already correct" Minute 15
+            (T.Parts 2020 Time.Jan 4 3 0 0 0)
+            (T.Parts 2020 Time.Jan 4 3 0 0 0)
 
-                expected =
-                  T.Parts 2020 Time.Jan 4 3 0 0 0
-            in
-            Expect.equal expected result
-
-        , test "3" <| \_ ->
-            let result =
-                  ceilingMinute Time.utc 2
-                    (toPosix (T.Parts 2020 Time.Jan 4 3 1 0 0))
-                    |> fromPosix
-
-                expected =
-                  T.Parts 2020 Time.Jan 4 3 2 0 0
-            in
-            Expect.equal expected result
+        , testCeiling "ceil correctly when overflowing" Minute 15
+            (T.Parts 2020 Time.Dec 31 23 59 0 0)
+            (T.Parts 2021 Time.Jan 1 0 0 0 0)
         ]
 
-    , describe "ceilingSecond"
-        [ test "1" <| \_ ->
-            let result =
-                  ceilingSecond Time.utc 15
-                    (toPosix (T.Parts 2020 Time.Jan 4 3 0 2 0))
-                    |> fromPosix
+    , describe "seconds"
+        [ testCeiling "ceil correctly" Second 2
+            (T.Parts 2020 Time.Jan 4 3 0 1 0)
+            (T.Parts 2020 Time.Jan 4 3 0 2 0)
 
-                expected =
-                  T.Parts 2020 Time.Jan 4 3 0 15 0
-            in
-            Expect.equal expected result
+        , testCeiling "ceil correctly with larger number" Second 15
+            (T.Parts 2020 Time.Jan 4 3 0 2 0)
+            (T.Parts 2020 Time.Jan 4 3 0 15 0)
 
-        , test "2" <| \_ ->
-            let result =
-                  ceilingSecond Time.utc 15
-                    (toPosix (T.Parts 2020 Time.Jan 4 3 0 0 0))
-                    |> fromPosix
+        , testCeiling "ceil correctly when already correct" Second 15
+            (T.Parts 2020 Time.Jan 4 3 0 0 0)
+            (T.Parts 2020 Time.Jan 4 3 0 0 0)
 
-                expected =
-                  T.Parts 2020 Time.Jan 4 3 0 0 0
-            in
-            Expect.equal expected result
-
-        , test "3" <| \_ ->
-            let result =
-                  ceilingSecond Time.utc 2
-                    (toPosix (T.Parts 2020 Time.Jan 4 3 0 1 0))
-                    |> fromPosix
-
-                expected =
-                  T.Parts 2020 Time.Jan 4 3 0 2 0
-            in
-            Expect.equal expected result
+        , testCeiling "ceil correctly when overflowing" Second 15
+            (T.Parts 2020 Time.Dec 31 23 59 58 0)
+            (T.Parts 2021 Time.Jan 1 0 0 0 0)
         ]
 
-    , describe "ceilingMs"
-        [ test "1" <| \_ ->
-            let result =
-                  ceilingMs Time.utc 200
-                    (toPosix (T.Parts 2020 Time.Jan 4 3 0 0 2))
-                    |> fromPosix
+    , describe "Milliseconds"
+        [ testCeiling "ceil correctly" Millisecond 200
+            (T.Parts 2020 Time.Jan 4 3 0 0 1)
+            (T.Parts 2020 Time.Jan 4 3 0 0 200)
 
-                expected =
-                  T.Parts 2020 Time.Jan 4 3 0 0 200
-            in
-            Expect.equal expected result
+        , testCeiling "ceil correctly when overflowing" Millisecond 200
+            (T.Parts 2020 Time.Dec 31 23 59 59 987)
+            (T.Parts 2021 Time.Jan 1 0 0 0 0)
 
-        , test "2" <| \_ ->
-            let result =
-                  ceilingMs Time.utc 300
-                    (toPosix (T.Parts 2020 Time.Jan 4 3 0 0 0))
-                    |> fromPosix
-
-                expected =
-                  T.Parts 2020 Time.Jan 4 3 0 0 0
-            in
-            Expect.equal expected result
-
-        , test "3" <| \_ ->
-            let result =
-                  ceilingMs Time.utc 200
-                    (toPosix (T.Parts 2020 Time.Jan 4 3 0 0 1))
-                    |> fromPosix
-
-                expected =
-                  T.Parts 2020 Time.Jan 4 3 0 0 200
-            in
-            Expect.equal expected result
+        , testCeiling "ceil correctly when already correct" Millisecond 300
+            (T.Parts 2020 Time.Jan 4 3 0 0 0)
+            (T.Parts 2020 Time.Jan 4 3 0 0 0)
         ]
     ]
 
 
+
+testCeiling : String -> Unit -> Int -> T.Parts -> T.Parts -> Test
+testCeiling name unit mult parts expected =
+  test name <| \_ ->
+    let result =
+          ceilingUnit Time.utc unit mult (toPosix parts)
+            |> fromPosix
+    in
+    Expect.equal expected result
 
 
 toPosix : T.Parts -> Time.Posix
