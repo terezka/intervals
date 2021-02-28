@@ -1,4 +1,4 @@
-module Values exposing (..)
+module Intervals.Time exposing (..)
 
 
 import Time
@@ -7,27 +7,14 @@ import TimeExtra as T
 import Round
 
 
-{-| A timestamp with extra info helpful for formatting. Explanation:
-
-  - ** timestamp ** is the position where the tick goes on the axis.
-  - ** isFirst ** is whether this is the first tick or not.
-  - ** unit ** is unit of the interval at which all the ticks are spaced.
-  - ** multiple ** is multiple of the unit of the interval at which all the ticks are spaced.
-  - ** change ** is a `Just` when the tick is changing to a larger unit
-    than used in the interval. E.g. if the interval is 2 hours, then
-    this will be a `Just Day` when the day changes. Useful if you
-    want a different formatting for those ticks!
-
--}
 type alias Time =
   { timestamp : Time.Posix
   , zone : Time.Zone
   , isFirst : Bool
   , unit : Unit
   , multiple : Int
-  , change : Unit
+  , change : Maybe Unit
   }
-
 
 
 type Unit
@@ -59,14 +46,13 @@ values zone maxMmount min max =
           [] ->
             acc
 
-
       toTick x timestamp change =
         { timestamp = timestamp
         , zone = zone
         , isFirst = x == 0
         , unit = unit
         , multiple = mult
-        , change = change
+        , change = if unitToInt change > unitToInt unit then Just change else Nothing
         }
   in
   List.reverse <| toTicks (List.range 0 (amount - 1)) []

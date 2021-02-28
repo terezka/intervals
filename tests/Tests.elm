@@ -99,14 +99,4 @@ suite =
               [ 30, 50, 70, 90 ]
         in
         Expect.equal expected result
-    , test "Can make nice time 1" <| \_ ->
-        let result =
-              Intervals.times Time.utc 10 (Intervals.Range 1361796125 1614260525)
-                |> List.map .timestamp
-                |> List.map Time.posixToMillis
-
-            expected =
-              [1594800000,1566000000,1537200000,1508400000,1479600000,1450800000,1422000000,1393200000]
-        in
-        Expect.equal expected result
     ]

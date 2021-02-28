@@ -3,7 +3,7 @@ module TestTimes exposing (..)
 import Expect exposing (Expectation)
 import Fuzz exposing (Fuzzer, int, list, string)
 import Test exposing (..)
-import Values exposing (..)
+import Intervals.Time exposing (..)
 import Time
 import Time.Extra as T
 
@@ -15,58 +15,58 @@ suite =
     [ testValues "a year with six ticks" 6
         (T.Parts 2020 Time.Jan 1 0 0 0 0)
         (T.Parts 2021 Time.Jan 1 0 0 0 0)
-        [ Time (toPosix (T.Parts 2020 Time.Jan 1 0 0 0 0)) Time.utc True Month 3 Year
-        , Time (toPosix (T.Parts 2020 Time.Apr 1 0 0 0 0)) Time.utc False Month 3 Month
-        , Time (toPosix (T.Parts 2020 Time.Jul 1 0 0 0 0)) Time.utc False Month 3 Month
-        , Time (toPosix (T.Parts 2020 Time.Oct 1 0 0 0 0)) Time.utc False Month 3 Month
-        , Time (toPosix (T.Parts 2021 Time.Jan 1 0 0 0 0)) Time.utc False Month 3 Year
+        [ Time (toPosix (T.Parts 2020 Time.Jan 1 0 0 0 0)) Time.utc True Month 3 (Just Year)
+        , Time (toPosix (T.Parts 2020 Time.Apr 1 0 0 0 0)) Time.utc False Month 3 Nothing
+        , Time (toPosix (T.Parts 2020 Time.Jul 1 0 0 0 0)) Time.utc False Month 3 Nothing
+        , Time (toPosix (T.Parts 2020 Time.Oct 1 0 0 0 0)) Time.utc False Month 3 Nothing
+        , Time (toPosix (T.Parts 2021 Time.Jan 1 0 0 0 0)) Time.utc False Month 3 (Just Year)
         ]
 
     , testValues "a offset year with six ticks" 6
         (T.Parts 2019 Time.Nov 1 0 0 0 0)
         (T.Parts 2021 Time.Jan 1 0 0 0 0)
-        [ Time (toPosix (T.Parts 2020 Time.Jan 1 0 0 0 0)) Time.utc True Month 3 Year
-        , Time (toPosix (T.Parts 2020 Time.Apr 1 0 0 0 0)) Time.utc False Month 3 Month
-        , Time (toPosix (T.Parts 2020 Time.Jul 1 0 0 0 0)) Time.utc False Month 3 Month
-        , Time (toPosix (T.Parts 2020 Time.Oct 1 0 0 0 0)) Time.utc False Month 3 Month
-        , Time (toPosix (T.Parts 2021 Time.Jan 1 0 0 0 0)) Time.utc False Month 3 Year
+        [ Time (toPosix (T.Parts 2020 Time.Jan 1 0 0 0 0)) Time.utc True Month 3 (Just Year)
+        , Time (toPosix (T.Parts 2020 Time.Apr 1 0 0 0 0)) Time.utc False Month 3 Nothing
+        , Time (toPosix (T.Parts 2020 Time.Jul 1 0 0 0 0)) Time.utc False Month 3 Nothing
+        , Time (toPosix (T.Parts 2020 Time.Oct 1 0 0 0 0)) Time.utc False Month 3 Nothing
+        , Time (toPosix (T.Parts 2021 Time.Jan 1 0 0 0 0)) Time.utc False Month 3 (Just Year)
         ]
 
     , testValues "a more offset year with six ticks" 6
         (T.Parts 2019 Time.Oct 1 0 0 0 0)
         (T.Parts 2021 Time.Jan 1 0 0 0 0)
-        [ Time (toPosix (T.Parts 2019 Time.Oct 1 0 0 0 0)) Time.utc True Month 3 Month
-        , Time (toPosix (T.Parts 2020 Time.Jan 1 0 0 0 0)) Time.utc False Month 3 Year
-        , Time (toPosix (T.Parts 2020 Time.Apr 1 0 0 0 0)) Time.utc False Month 3 Month
-        , Time (toPosix (T.Parts 2020 Time.Jul 1 0 0 0 0)) Time.utc False Month 3 Month
-        , Time (toPosix (T.Parts 2020 Time.Oct 1 0 0 0 0)) Time.utc False Month 3 Month
-        , Time (toPosix (T.Parts 2021 Time.Jan 1 0 0 0 0)) Time.utc False Month 3 Year
+        [ Time (toPosix (T.Parts 2019 Time.Oct 1 0 0 0 0)) Time.utc True Month 3 Nothing
+        , Time (toPosix (T.Parts 2020 Time.Jan 1 0 0 0 0)) Time.utc False Month 3 (Just Year)
+        , Time (toPosix (T.Parts 2020 Time.Apr 1 0 0 0 0)) Time.utc False Month 3 Nothing
+        , Time (toPosix (T.Parts 2020 Time.Jul 1 0 0 0 0)) Time.utc False Month 3 Nothing
+        , Time (toPosix (T.Parts 2020 Time.Oct 1 0 0 0 0)) Time.utc False Month 3 Nothing
+        , Time (toPosix (T.Parts 2021 Time.Jan 1 0 0 0 0)) Time.utc False Month 3 (Just Year)
         ]
 
     , testValues "a week with seven ticks" 10
         (T.Parts 2020 Time.Jan 3 0 0 0 0)
         (T.Parts 2020 Time.Jan 12 0 0 0 0)
-        [ Time (toPosix (T.Parts 2020 Time.Jan 3 0 0 0 0)) Time.utc True Day 1 Day
-        , Time (toPosix (T.Parts 2020 Time.Jan 4 0 0 0 0)) Time.utc False Day 1 Day
-        , Time (toPosix (T.Parts 2020 Time.Jan 5 0 0 0 0)) Time.utc False Day 1 Day
-        , Time (toPosix (T.Parts 2020 Time.Jan 6 0 0 0 0)) Time.utc False Day 1 Day
-        , Time (toPosix (T.Parts 2020 Time.Jan 7 0 0 0 0)) Time.utc False Day 1 Day
-        , Time (toPosix (T.Parts 2020 Time.Jan 8 0 0 0 0)) Time.utc False Day 1 Day
-        , Time (toPosix (T.Parts 2020 Time.Jan 9 0 0 0 0)) Time.utc False Day 1 Day
-        , Time (toPosix (T.Parts 2020 Time.Jan 10 0 0 0 0)) Time.utc False Day 1 Day
-        , Time (toPosix (T.Parts 2020 Time.Jan 11 0 0 0 0)) Time.utc False Day 1 Day
-        , Time (toPosix (T.Parts 2020 Time.Jan 12 0 0 0 0)) Time.utc False Day 1 Day
+        [ Time (toPosix (T.Parts 2020 Time.Jan 3 0 0 0 0)) Time.utc True Day 1 Nothing
+        , Time (toPosix (T.Parts 2020 Time.Jan 4 0 0 0 0)) Time.utc False Day 1 Nothing
+        , Time (toPosix (T.Parts 2020 Time.Jan 5 0 0 0 0)) Time.utc False Day 1 Nothing
+        , Time (toPosix (T.Parts 2020 Time.Jan 6 0 0 0 0)) Time.utc False Day 1 Nothing
+        , Time (toPosix (T.Parts 2020 Time.Jan 7 0 0 0 0)) Time.utc False Day 1 Nothing
+        , Time (toPosix (T.Parts 2020 Time.Jan 8 0 0 0 0)) Time.utc False Day 1 Nothing
+        , Time (toPosix (T.Parts 2020 Time.Jan 9 0 0 0 0)) Time.utc False Day 1 Nothing
+        , Time (toPosix (T.Parts 2020 Time.Jan 10 0 0 0 0)) Time.utc False Day 1 Nothing
+        , Time (toPosix (T.Parts 2020 Time.Jan 11 0 0 0 0)) Time.utc False Day 1 Nothing
+        , Time (toPosix (T.Parts 2020 Time.Jan 12 0 0 0 0)) Time.utc False Day 1 Nothing
         ]
 
     , testValues "offset two days with 24 ticks" 8
         (T.Parts 2020 Time.Jan 2 13 0 0 0)
         (T.Parts 2020 Time.Jan 4 4 0 0 0)
-        [ Time (toPosix (T.Parts 2020 Time.Jan 2 18 0 0 0)) Time.utc True Hour 6 Hour
-        , Time (toPosix (T.Parts 2020 Time.Jan 3 0 0 0 0)) Time.utc False Hour 6 Day
-        , Time (toPosix (T.Parts 2020 Time.Jan 3 6 0 0 0)) Time.utc False Hour 6 Hour
-        , Time (toPosix (T.Parts 2020 Time.Jan 3 12 0 0 0)) Time.utc False Hour 6 Hour
-        , Time (toPosix (T.Parts 2020 Time.Jan 3 18 0 0 0)) Time.utc False Hour 6 Hour
-        , Time (toPosix (T.Parts 2020 Time.Jan 4 0 0 0 0)) Time.utc False Hour 6 Day
+        [ Time (toPosix (T.Parts 2020 Time.Jan 2 18 0 0 0)) Time.utc True Hour 6 Nothing
+        , Time (toPosix (T.Parts 2020 Time.Jan 3 0 0 0 0)) Time.utc False Hour 6 (Just Day)
+        , Time (toPosix (T.Parts 2020 Time.Jan 3 6 0 0 0)) Time.utc False Hour 6 Nothing
+        , Time (toPosix (T.Parts 2020 Time.Jan 3 12 0 0 0)) Time.utc False Hour 6 Nothing
+        , Time (toPosix (T.Parts 2020 Time.Jan 3 18 0 0 0)) Time.utc False Hour 6 Nothing
+        , Time (toPosix (T.Parts 2020 Time.Jan 4 0 0 0 0)) Time.utc False Hour 6 (Just Day)
         ]
     ]
 
