@@ -19,21 +19,25 @@ type Unit
 
 values : Time.Zone -> Int -> Time.Posix -> Time.Posix -> ( Unit, Int )
 values zone amount min max =
-  let mults = getMultiples zone min max
-      toNice unit actual =
-        let niceNums = niceMultiples unit
-            maybeNiceNum = List.filter (\n -> n <= (actual // amount)) niceNums
+  let mults =
+        getMultiples zone min max
+
+      toNice unit =
+        let actual = unitFromDiff unit mults
+            niceNums = niceMultiples unit
+            maybeNiceNum = List.filter (\n -> div actual n <= amount) niceNums
+            div n1 n2 = ceiling (toFloat n1 / toFloat n2)
         in
         case List.head maybeNiceNum of
           Just niceNum ->
             ( unit, niceNum )
 
           Nothing ->
-            case smallerUnit unit of
-              Just smaller -> toNice smaller (unitFromDiff smaller mults)
-              Nothing -> ( Millisecond, unitFromDiff Millisecond mults )
+            case largerUnit unit of
+              Just larger -> toNice larger
+              Nothing -> ( Year, 100000000 )
   in
-  toNice Year mults.year
+  toNice Millisecond
 
 
 getMultiples : Time.Zone -> Time.Posix -> Time.Posix -> Diff
@@ -46,7 +50,10 @@ getMultiples zone a b =
       timeDiff unit ms =
         let ceiled = T.ceiling unit zone a in
         if toMs ceiled > toMs b then -1
-        else (toMs b - toMs ceiled) // ms
+        else div (toMs b - toMs ceiled) ms
+
+      div n1 n2 =
+        floor (toFloat n1 / toFloat n2)
   in
   { year = diff T.Year .year + 1
   , month = diff T.Month (\d -> d.month + d.year * 12) + 1
@@ -61,25 +68,14 @@ getMultiples zone a b =
 niceMultiples : Unit -> List Int
 niceMultiples unit =
   case unit of
-    Millisecond -> [ 500, 200, 100, 50, 25, 20, 20, 10, 5, 2, 1 ]
-    Second      -> [ 30, 15, 10, 5, 2, 1 ]
-    Minute      -> [ 30, 15, 10, 5, 2, 1 ]
-    Hour        -> [ 12, 8, 6, 4, 3, 2, 1 ]
-    Day         -> [ 2, 1 ]
-    Month       -> [ 6, 4, 3, 2, 1 ]
-    Year        -> [ 10000000, 1000000, 10000, 1000, 500, 200, 100, 50, 25, 20, 10, 5, 2, 1 ]
-
-
-niceMultiplesBack : Unit -> List Int
-niceMultiplesBack unit =
-  case unit of
     Millisecond -> [ 1, 2, 5, 10, 20, 25, 50, 100, 200, 500 ]
     Second      -> [ 1, 2, 5, 10, 15, 30 ]
     Minute      -> [ 1, 2, 5, 10, 15, 30 ]
     Hour        -> [ 1, 2, 3, 4, 6, 8, 12 ]
-    Day         -> [ 1, 2 ]
+    Day         -> [ 1, 2, 3, 7, 14 ]
     Month       -> [ 1, 2, 3, 4, 6 ]
     Year        -> [ 1, 2, 5, 10, 20, 25, 50, 100, 200, 500, 1000, 10000, 1000000, 10000000 ]
+
 
 
 -- HELPERS
@@ -151,16 +147,16 @@ unitFromDiff unit diff =
     Year -> diff.year
 
 
-largerUnit : Unit -> Unit
+largerUnit : Unit -> Maybe Unit
 largerUnit unit =
   case unit of
-    Millisecond -> Second
-    Second -> Minute
-    Minute -> Hour
-    Hour -> Day
-    Day -> Month
-    Month -> Year
-    Year -> Year
+    Millisecond -> Just Second
+    Second -> Just Minute
+    Minute -> Just Hour
+    Hour -> Just Day
+    Day -> Just Month
+    Month -> Just Year
+    Year -> Nothing
 
 
 smallerUnit : Unit -> Maybe Unit
