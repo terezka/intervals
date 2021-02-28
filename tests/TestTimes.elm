@@ -28,7 +28,6 @@ suite =
               values Time.utc 3
                 (toPosix (T.Parts 2020 Time.Jan 4 0 0 0 0))
                 (toPosix (T.Parts 2020 Time.Jan 10 0 0 0 0))
-                -- Diff 0 0 7 145 8641 518401 518400001
                 -- 4 5 6 7 8 9 10
 
             expected =
@@ -41,7 +40,6 @@ suite =
               values Time.utc 7
                 (toPosix (T.Parts 2020 Time.Jan 4 0 0 0 0))
                 (toPosix (T.Parts 2020 Time.Jan 10 0 0 0 0))
-                -- Diff 0 0 7 145 8641 518401 518400001
                 -- 4 5 6 7 8 9 10
 
             expected =
@@ -127,6 +125,18 @@ suite =
 
             expected =
               ( Year, 100 )
+        in
+        Expect.equal expected result
+
+
+    , test "6-2" <| \_ ->
+        let result =
+              values Time.utc 2
+                (toPosix (T.Parts 2020 Time.Jan 4 0 0 0 0))
+                (toPosix (T.Parts 4224 Time.Jan 10 0 0 0 0))
+
+            expected =
+              ( Year, 1000 )
         in
         Expect.equal expected result
 
