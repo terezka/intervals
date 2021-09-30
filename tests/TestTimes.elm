@@ -12,7 +12,11 @@ import Time.Extra as T
 suite : Test
 suite =
   describe "values:"
-    [ testValues "a year with six ticks" 6
+    [ testValuesMs "12 hours with 24 ticks" 25
+        [ 1632992400000, 1632990600000, 1632988800000, 1632987000000, 1632985200000, 1632983400000, 1632981600000, 1632979800000, 1632978000000, 1632976200000, 1632974400000, 1632972600000, 1632970800000, 1632969000000, 1632967200000, 1632965400000, 1632963600000, 1632961800000, 1632960000000, 1632958200000, 1632956400000, 1632954600000, 1632952800000, 1632951000000, 1632949200000 ]
+        [ 1632949200000,1632951000000,1632952800000,1632954600000,1632956400000,1632958200000,1632960000000,1632961800000,1632963600000,1632965400000,1632967200000,1632969000000,1632970800000,1632972600000,1632974400000,1632976200000,1632978000000,1632979800000,1632981600000,1632983400000,1632985200000,1632987000000,1632988800000,1632990600000,1632992400000 ]
+
+    , testValues "a year with six ticks" 6
         (T.Parts 2020 Time.Jan 1 0 0 0 0)
         (T.Parts 2021 Time.Jan 1 0 0 0 0)
         [ Time (toPosix (T.Parts 2020 Time.Jan 1 0 0 0 0)) Time.utc True Month 3 (Just Year)
@@ -78,6 +82,18 @@ testValues name amount a b expected =
           values Time.utc amount (toPosix a) (toPosix b)
     in
     Expect.equal expected result
+
+
+testValuesMs : String -> Int -> List Int -> List Int -> Test
+testValuesMs name amount initial expected =
+  test name <| \_ ->
+    let min = Time.millisToPosix <| Maybe.withDefault 0 (List.minimum initial)
+        max = Time.millisToPosix <| Maybe.withDefault 0 (List.maximum initial)
+
+        result =
+          values Time.utc amount min max
+    in
+    Expect.equal expected (List.map (Time.posixToMillis << .timestamp) result)
 
 
 bestUnitSuite : Test

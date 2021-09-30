@@ -317,7 +317,93 @@ oneDay =
 
 
 
--- ROUND DATES
+-- ROUND DATES / FLOOR
+
+
+floorUnit : Time.Zone -> Unit -> Int -> Time.Posix -> Time.Posix
+floorUnit zone unit mult =
+  case unit of
+    Millisecond -> floorMs zone mult
+    Second -> floorSecond zone mult
+    Minute -> floorMinute zone mult
+    Hour -> floorHour zone mult
+    Day -> floorDay zone mult
+    Month -> floorMonth zone mult
+    Year -> floorYear zone mult
+
+
+floorMs : Time.Zone -> Int -> Time.Posix -> Time.Posix
+floorMs zone mult stamp =
+  let parts = T.posixToParts zone stamp
+      rem = remainderBy mult parts.millisecond
+  in
+  if rem == 0
+  then T.partsToPosix zone parts
+  else T.add T.Millisecond -rem zone stamp
+
+
+floorSecond : Time.Zone -> Int -> Time.Posix -> Time.Posix
+floorSecond zone mult stamp =
+  let parts = T.posixToParts zone (T.floor T.Second zone stamp)
+      rem = remainderBy mult parts.second
+      new = T.partsToPosix zone parts
+  in
+  if rem == 0
+  then new
+  else T.add T.Second -rem zone stamp
+
+
+floorMinute : Time.Zone -> Int -> Time.Posix -> Time.Posix
+floorMinute zone mult stamp =
+  let parts = T.posixToParts zone (T.floor T.Minute zone stamp)
+      rem = remainderBy mult parts.minute
+      new = T.partsToPosix zone parts
+  in
+  if rem == 0
+  then new
+  else T.add T.Minute -rem zone new
+
+
+floorHour : Time.Zone -> Int -> Time.Posix -> Time.Posix
+floorHour zone mult stamp =
+  let parts = T.posixToParts zone (T.floor T.Hour zone stamp)
+      rem = remainderBy mult parts.hour
+      new = T.partsToPosix zone parts
+  in
+  if rem == 0
+  then new
+  else T.add T.Hour -rem zone new
+
+
+floorDay : Time.Zone -> Int -> Time.Posix -> Time.Posix
+floorDay zone mult stamp =
+  if mult == 7 then
+    T.floor T.Week zone stamp
+  else
+    T.floor T.Day zone stamp
+
+
+floorMonth : Time.Zone -> Int -> Time.Posix -> Time.Posix
+floorMonth zone mult stamp =
+  let parts = T.posixToParts zone (T.floor T.Month zone stamp)
+      monthInt = monthAsInt parts.month
+      rem = remainderBy mult (monthInt - 1)
+      newMonth = if rem == 0 then monthInt else monthInt - rem
+  in
+  T.partsToPosix zone { parts | month = intAsMonth newMonth }
+
+
+floorYear : Time.Zone -> Int -> Time.Posix -> Time.Posix
+floorYear zone mult stamp =
+  let parts = T.posixToParts zone (T.ceiling T.Year zone stamp)
+      rem = remainderBy mult parts.year
+      newYear = if rem == 0 then parts.year else parts.year - rem
+  in
+  T.partsToPosix zone { parts | year = newYear }
+
+
+
+-- CEILING
 
 
 ceilingUnit : Time.Zone -> Unit -> Int -> Time.Posix -> Time.Posix
@@ -346,30 +432,33 @@ ceilingSecond : Time.Zone -> Int -> Time.Posix -> Time.Posix
 ceilingSecond zone mult stamp =
   let parts = T.posixToParts zone (T.ceiling T.Second zone stamp)
       rem = remainderBy mult parts.second
+      new = T.partsToPosix zone parts
   in
   if rem == 0
-  then T.partsToPosix zone parts
-  else T.add T.Second (mult - rem) zone stamp
+  then new
+  else T.add T.Second (mult - rem) zone new
 
 
 ceilingMinute : Time.Zone -> Int -> Time.Posix -> Time.Posix
 ceilingMinute zone mult stamp =
   let parts = T.posixToParts zone (T.ceiling T.Minute zone stamp)
       rem = remainderBy mult parts.minute
+      new = T.partsToPosix zone parts
   in
   if rem == 0
-  then T.partsToPosix zone parts
-  else T.add T.Minute (mult - rem) zone stamp
+  then new
+  else T.add T.Minute (mult - rem) zone new
 
 
 ceilingHour : Time.Zone -> Int -> Time.Posix -> Time.Posix
 ceilingHour zone mult stamp =
   let parts = T.posixToParts zone (T.ceiling T.Hour zone stamp)
       rem = remainderBy mult parts.hour
+      new = T.partsToPosix zone parts
   in
   if rem == 0
-  then T.partsToPosix zone parts
-  else T.add T.Hour (mult - rem) zone stamp
+  then new
+  else T.add T.Hour (mult - rem) zone new
 
 
 ceilingDay : Time.Zone -> Int -> Time.Posix -> Time.Posix
@@ -389,7 +478,7 @@ ceilingMonth zone mult stamp =
   in
   T.partsToPosix zone <|
     if newMonth > 12
-    then { parts | year = parts.year + 1, month = intAsMonth (newMonth - 12)  }
+    then { parts | year = parts.year + 1, month = intAsMonth (newMonth - 12) }
     else { parts | month = intAsMonth newMonth }
 
 
